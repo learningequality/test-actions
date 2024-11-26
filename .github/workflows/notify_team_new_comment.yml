@@ -1,0 +1,11 @@
+name: Send a slack notification when a contributor comments on issue
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  contributor_issue_comment:
+    uses: rparadowski/.github/.github/workflows/notify_team_new_comment.yml@12567_issue
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
