@@ -7,6 +7,19 @@ Changelog is rather internal in nature. See release notes for the public overvie
 <!-- [DO NOT REMOVE-USED BY GH ACTION] PASTE CHANGELOG -->
 
 
+- [#53]
+  - **Description:** add notify_team_new_comment workflow
+  - **Products impact:** none
+  - **Addresses:** https://github.com/learningequality/kolibri/issues/12567
+  - **Components:** Affected public KDS component. Do not include internal sub-components or documentation components.
+  - **Breaking:** no
+  - **Impacts a11y:** no
+  - **Guidance:** no applicable
+
+[#53]: https://github.com/learningequality/test-actions/pull/53
+
+
+
 - [#51]
   - **Description:** Summary of change(s)
   - **Products impact:** Choose from - none (for internal updates) / bugfix / new API / updated API / removed API. If it's 'none', use "-" for all items below to indicate they are not relevant.
