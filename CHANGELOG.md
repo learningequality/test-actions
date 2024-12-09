@@ -7,6 +7,19 @@ Changelog is rather internal in nature. See release notes for the public overvie
 <!-- [DO NOT REMOVE-USED BY GH ACTION] PASTE CHANGELOG -->
 
 
+- [#57]
+  - **Description:** Summary of change(s)
+  - **Products impact:** Choose from - none (for internal updates) / bugfix / new API / updated API / removed API. If it's 'none', use "-" for all items below to indicate they are not relevant.
+  - **Addresses:** Link(s) to GH issue(s) addressed. Include KDS links as well as links to related issues in a consumer product repository too.
+  - **Components:** Affected public KDS component. Do not include internal sub-components or documentation components.
+  - **Breaking:** Will this change break something in a consumer? Choose from: yes / no
+  - **Impacts a11y:** Does this change improve a11y or adds new features that can be used to improve it? Choose from: yes / no
+  - **Guidance:** Why and how to introduce this update to a consumer? Required for breaking changes, appreciated for changes with a11y impact, and welcomed for non-breaking changes when relevant.
+
+[#57]: https://github.com/learningequality/test-actions/pull/57
+
+
+
 - [#53]
   - **Description:** add notify_team_new_comment workflow
   - **Products impact:** none
