@@ -9,7 +9,7 @@ on:
 
 jobs:
   call-update-spreadsheet:
-    uses: learningequality/.github/.github/workflows/update-pr-spreadsheet.yml@6f51ca97c3d1e6a1f123a48e9165bc0d3b9d7f7d
+    uses: learningequality/.github/.github/workflows/update-pr-spreadsheet.yml@4b137beb8a5460492b2485cf8789515a61c63563
     secrets:
       CONTRIBUTIONS_SPREADSHEET_ID: ${{ secrets.CONTRIBUTIONS_SPREADSHEET_ID }}
       CONTRIBUTIONS_SHEET_NAME: ${{ secrets.CONTRIBUTIONS_SHEET_NAME }}
