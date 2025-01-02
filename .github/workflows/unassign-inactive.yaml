@@ -11,3 +11,4 @@ jobs:
     uses: learningequality/.github/.github/workflows/unassign-inactive-issues.yaml@main  
     secrets:
        WEB_Token: ${{ secrets.NEW_TOKEN }}
+       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
