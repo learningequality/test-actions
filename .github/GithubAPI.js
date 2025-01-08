@@ -1,0 +1,190 @@
+const axios = require("axios");
+
+module.exports = class GithubAPI {
+  constructor(owner) {
+    this.url = 'https://api.github.com/graphql';
+    this.token = process.env.GITHUB_TOKEN;
+    console.log("Is there a github token?", !!this.token);
+    this.owner = owner;
+  }
+
+  async query(query, variables) {
+    try {
+      const response = await axios.post(this.url, {
+        query,
+        variables
+      }, {
+        headers: {
+          Authorization: `Bearer ${this.token}`
+        }
+      });
+
+      if (response.data.errors) {
+        throw new Error(JSON.stringify(response.data.errors, null, 2));
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
+  async getSourceAndTargetProjects({ sourceNumber, targetNumber }) {
+    const projectSubquery = `
+      id
+      title
+      fields(first: 30) {
+        nodes {
+          ... on ProjectV2SingleSelectField {
+            id
+            name
+            options {
+              id
+              name
+            }
+          }
+        }
+      }
+    `;
+    const query = `
+      query getSourceAndTargetProjectsIds($owner: String!, $source: Int!, $target: Int!) {
+        organization (login: $owner) {
+          source: projectV2(number: $source) {
+            ${projectSubquery}
+          }
+          target: projectV2(number: $target) {
+            ${projectSubquery}
+          }
+        }
+      }
+    `;
+
+    const response = await this.query(query, {
+      owner: this.owner,
+      source: sourceNumber,
+      target: targetNumber,
+    });
+
+    const { source, target } = response.data.organization;
+
+    if (!source) {
+      throw new Error(`Source project not found: ${sourceNumber}`);
+    }
+
+    if (!target) {
+      throw new Error(`Target project not found: ${targetNumber}`);
+    }
+
+    return {
+      sourceProject: source,
+      targetProject: target
+    };
+  }
+
+  async getProjectItems(projectId) {
+    const statusSubquery = `
+      status: fieldValueByName(name: "Status") {
+        ... on ProjectV2ItemFieldSingleSelectValue {
+          vaueId: id
+          value: name
+          valueOptionId: optionId
+        }
+      }
+    `;
+    // Subquery to get info about the status of the issue/PR on each project it belongs to
+    const projectItemsSubquery = `
+      projectItems(first: 10) {
+        nodes {
+          id
+          ${ statusSubquery }
+          project {
+            id
+            title
+          }
+        }
+      }
+    `;
+    const query = `
+      query GetProjectItems($projectId: ID!, $cursor: String) {
+        node(id: $projectId) {
+          ... on ProjectV2 {
+            items(first: 50, after: $cursor) {
+              pageInfo {
+                hasNextPage
+                endCursor
+              }
+              nodes {
+                id
+                ${ statusSubquery }
+                content {
+                  __typename
+                  ... on Issue {
+                    id
+                    title
+                    ${ projectItemsSubquery }
+                  }
+                  ... on PullRequest {
+                    id
+                    title
+                    ${ projectItemsSubquery }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    const _getProjectItems = async (cursor = null, items = []) => {
+      const response = await this.query(query, {
+        projectId,
+        cursor
+      });
+
+      const { nodes, pageInfo } = response.data.node.items;
+
+      items.push(...nodes);
+
+      if (pageInfo.hasNextPage) {
+        return _getProjectItems(pageInfo.endCursor, items);
+      }
+
+      return items;
+    };
+
+    return _getProjectItems();
+  }
+
+  async updateProjectItemsFields(items) {
+    const query = `
+      mutation UpdateProjectItemField($projectId: ID!, $itemId: ID!, $fieldId: ID!, $newValue: ProjectV2FieldValue!) {
+        updateProjectV2ItemFieldValue(input: {
+          projectId: $projectId,
+          itemId: $itemId,
+          fieldId: $fieldId,
+          value: $newValue
+        }) {
+          projectV2Item {
+            id
+          }
+        }
+      }
+    `;
+
+    const BATCH_SIZE = 10;
+    for (let i = 0; i < items.length; i += BATCH_SIZE) {
+      const batch = items.slice(i, i + BATCH_SIZE);
+
+      await Promise.all(batch.map(async item => {
+        await this.query(query, {
+          projectId: item.projectId,
+          itemId: item.projectItemId,
+          fieldId: item.fieldId,
+          newValue: item.newValue
+        });
+      }));
+    }
+  }
+}
