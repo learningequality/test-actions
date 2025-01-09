@@ -1,29 +1,7 @@
-const axios = require("axios");
-
 module.exports = class GithubAPI {
   constructor(owner, github) {
     this.owner = owner;
     this.github = github;
-  }
-
-  async query(query, variables) {
-    try {
-      const response = await this.github.graphql(
-        query,
-        variables
-      );
-      
-      console.log("Response", response);
-
-      if (response.data.errors) {
-        throw new Error(JSON.stringify(response.data.errors, null, 2));
-      }
-
-      return response.data;
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
   }
 
   async getSourceAndTargetProjects({ sourceNumber, targetNumber }) {
@@ -45,7 +23,7 @@ module.exports = class GithubAPI {
     `;
     const query = `
       query getSourceAndTargetProjectsIds($owner: String!, $source: Int!, $target: Int!) {
-        user (login: $owner) {
+        organization (login: $owner) {
           source: projectV2(number: $source) {
             ${projectSubquery}
           }
@@ -56,13 +34,13 @@ module.exports = class GithubAPI {
       }
     `;
 
-    const response = await this.query(query, {
+    const response = await this.github.graphql(query, {
       owner: this.owner,
       source: sourceNumber,
       target: targetNumber,
     });
 
-    const { source, target } = response.data.organization;
+    const { source, target } = response.organization;
 
     if (!source) {
       throw new Error(`Source project not found: ${sourceNumber}`);
@@ -134,12 +112,12 @@ module.exports = class GithubAPI {
     `;
 
     const _getProjectItems = async (cursor = null, items = []) => {
-      const response = await this.query(query, {
+      const response = await this.github.graphql(query, {
         projectId,
         cursor
       });
 
-      const { nodes, pageInfo } = response.data.node.items;
+      const { nodes, pageInfo } = response.node.items;
 
       items.push(...nodes);
 
@@ -173,14 +151,14 @@ module.exports = class GithubAPI {
     for (let i = 0; i < items.length; i += BATCH_SIZE) {
       const batch = items.slice(i, i + BATCH_SIZE);
 
-      await Promise.all(batch.map(async item => {
-        await this.query(query, {
+      await Promise.all(batch.map(item => (
+        this.github.graphql(query, {
           projectId: item.projectId,
           itemId: item.projectItemId,
           fieldId: item.fieldId,
           newValue: item.newValue
-        });
-      }));
+        })
+      )));
     }
   }
 }

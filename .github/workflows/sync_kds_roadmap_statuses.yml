@@ -19,9 +19,6 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install axios
-        run: npm install axios
-
       - uses: tibdex/github-app-token@v1
         id: generate-token
         with:

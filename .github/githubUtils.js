@@ -66,9 +66,7 @@ const synchronizeProjectsStatuses = async (context, github) => {
   }))
 
   console.log(`Updating ${itemsToUpdate.length} items...`);
-  console.log("Items payload", itemsPayload);
   // await githubAPI.updateProjectItemsFields(itemsPayload);
-  console.log("Items updated successfully");
 }
 
 module.exports = {
