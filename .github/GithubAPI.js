@@ -56,6 +56,38 @@ module.exports = class GithubAPI {
     };
   }
 
+  async getProject (projectNumber) {
+    const query = `
+      query GetProject($owner: String!, $projectNumber: Int!) {
+        organization(login: $owner) {
+          projectV2(number: $projectNumber) {
+            id
+            status: field(name: "Status") {
+              ... on ProjectV2SingleSelectField {
+                id
+                options {
+                  id
+                  name
+                }
+              }
+            }
+            releasedIn: field(name: "Released in") {
+              ... on ProjectV2Field {
+                id
+              }
+            }
+          }
+        }
+      }
+    `;
+    const response = await this.github.graphql(query, {
+      owner: this.owner,
+      projectNumber
+    });
+
+    return response.organization.projectV2;
+  }
+
   async getProjectItems(projectId) {
     const statusSubquery = `
       status: fieldValueByName(name: "Status") {
@@ -131,6 +163,72 @@ module.exports = class GithubAPI {
     };
 
     return _getProjectItems();
+  }
+
+
+  async getPRsWithLinkedIssues(prNumbers, repo) {
+    const getPRKey = (prNumber) => `PR_${prNumber}`;
+    const getPRQuery = (prNumber) => {
+      const projectItemsSubquery = `
+        projectItems(first: 20) {
+          nodes{
+            id
+            releasedIn: fieldValueByName(name: "Released in"){
+              ... on ProjectV2ItemFieldTextValue {
+                text
+              }
+            }
+            project {
+              id
+              number
+            }
+          }
+        }
+      `;
+      return `
+        ${getPRKey(prNumber)}: pullRequest(number: ${prNumber}) {
+          id
+          number
+          ${ projectItemsSubquery }
+          closingIssuesReferences(first: 20) {
+            nodes {
+              id
+              ${ projectItemsSubquery }
+            }
+          }
+        }
+      `;
+    };
+    const query = `
+      query GetLinkedIssuesFromPRs($owner: String!, $repo: String!) {
+        repository(name: $repo, owner: $owner) {
+          ${ prNumbers.map(getPRQuery).join('\n') }
+        }
+      }
+    `;
+    const response = await this.github.graphql(query, {
+      owner: this.owner,
+      repo,
+    });
+
+    return prNumbers.map(prNumber => {
+      return response.repository[getPRKey(prNumber)];
+    });
+  }
+
+  async addContentToProject(projectId, contentId) {
+    const query = `
+      mutation AddContentToProject($projectId: ID!, $contentId: ID!) {
+        addProjectV2ItemById(input: {projectId: $projectId, contentId: $contentId}) {
+          item {
+            id
+          }
+        }
+      }
+    `;
+
+    const response = await this.github.graphql(query, { projectId, contentId });
+    return response.addProjectV2ItemById.item.id;
   }
 
   async updateProjectItemsFields(items) {
