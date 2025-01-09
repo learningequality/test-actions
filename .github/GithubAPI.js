@@ -1,23 +1,19 @@
 const axios = require("axios");
 
 module.exports = class GithubAPI {
-  constructor(owner) {
-    this.url = 'https://api.github.com/graphql';
-    this.token = process.env.GITHUB_TOKEN;
-    console.log("Is there a github token?", !!this.token);
+  constructor(owner, github) {
     this.owner = owner;
+    this.github = github;
   }
 
   async query(query, variables) {
     try {
-      const response = await axios.post(this.url, {
+      const response = await this.github.graphql(
         query,
         variables
-      }, {
-        headers: {
-          Authorization: `Bearer ${this.token}`
-        }
-      });
+      );
+      
+      console.log("Response", response);
 
       if (response.data.errors) {
         throw new Error(JSON.stringify(response.data.errors, null, 2));
@@ -49,7 +45,7 @@ module.exports = class GithubAPI {
     `;
     const query = `
       query getSourceAndTargetProjectsIds($owner: String!, $source: Int!, $target: Int!) {
-        organization (login: $owner) {
+        user (login: $owner) {
           source: projectV2(number: $source) {
             ${projectSubquery}
           }

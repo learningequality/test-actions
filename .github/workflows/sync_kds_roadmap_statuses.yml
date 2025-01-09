@@ -30,12 +30,8 @@ jobs:
 
       - name: Check and Sync Project Statuses
         uses: actions/github-script@v7
-        env:
-          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
-
         with:
           github-token: ${{ steps.generate-token.outputs.token }}
           script: |
-            console.log("github", github);
             const { synchronizeProjectsStatuses } = require('./.github/githubUtils.js');
-            synchronizeProjectsStatuses(github);
+            synchronizeProjectsStatuses(context, github);

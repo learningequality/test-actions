@@ -1,6 +1,6 @@
 const GithubAPI = require('./GithubAPI');
 
-const synchronizeProjectsStatuses = async (github) => {
+const synchronizeProjectsStatuses = async (context, github) => {
   const sourceNumber = 15; //"Iteration backlog";
   const targetNumber = 29; // KDS Roadmap
   const getTargetStatus = (sourceStatus) => {
@@ -11,50 +11,48 @@ const synchronizeProjectsStatuses = async (github) => {
       // All other statuses are mapped to "BACKLOG"
     };
 
-    const targetStatus = Object.keys(statusMap).find((key) => 
+    const targetStatus = Object.keys(statusMap).find((key) =>
       sourceStatus.toUpperCase().includes(key)
     );
 
     return targetStatus ? statusMap[targetStatus] : "BACKLOG";
   }
 
-  const githubAPI = new GithubAPI("LearningEquality", github);
+  const githubAPI = new GithubAPI(context.repo.owner, github);
   const { sourceProject, targetProject } = await githubAPI.getSourceAndTargetProjects({ sourceNumber, targetNumber });
 
-  console.log("sourceName", sourceNumber);
-  console.log("sourceProject", sourceProject);
   const targetStatusField = targetProject.fields.nodes.find((field) => field.name === "Status");
 
   const targetProjectItems = await githubAPI.getProjectItems(targetProject.id);
   const itemsToUpdate = targetProjectItems.filter((item) => {
-    const sourceProjectItem = item.content.projectItems?.nodes.find((sourceItem) => (
-      sourceItem.project.id === sourceProject.id
-    ));
-    if (!sourceProjectItem) {
+    const statusToByPass = "RELEASED";
+    const currentTargetStatusName = item.status?.value;
+    if (currentTargetStatusName?.toUpperCase().includes(statusToByPass)) {
       return false;
     }
 
-    const sourceStatus = sourceProjectItem.status?.value;
+    const sourceProjectItem = item.content.projectItems?.nodes.find((sourceItem) => (
+      sourceItem.project.id === sourceProject.id
+    ));
+    const sourceStatus = sourceProjectItem?.status?.value;
     if (!sourceStatus) {
       return false;
     }
 
-    const currentTargetStatusId = item.status?.valueOptionId;
     const newTargetStatus = getTargetStatus(sourceStatus);
     const newTargetStatusId = targetStatusField.options.find((option) => option.name.toUpperCase().includes(newTargetStatus))?.id;
 
     if (!newTargetStatusId) {
-      console.log(`Status "${newTargetStatus}" not found in target project`);
       return false;
     }
 
     item.newStatusId = newTargetStatusId;
 
+    const currentTargetStatusId = item.status?.valueOptionId;
     return newTargetStatusId !== currentTargetStatusId;
   });
 
   if (itemsToUpdate.length === 0) {
-    console.log("No items to update");
     return;
   }
 
