@@ -6,6 +6,7 @@ const synchronizeProjectsStatuses = async (context, github) => {
   const getTargetStatus = (sourceStatus) => {
     const statusMap = {
       "IN REVIEW": "IN REVIEW",
+      "IN PROGRESS": "IN PROGRESS",
       "NEEDS QA": "IN REVIEW",
       "DONE": "DONE",
       // All other statuses are mapped to "BACKLOG"
@@ -62,11 +63,12 @@ const synchronizeProjectsStatuses = async (context, github) => {
     fieldId: targetStatusField.id,
     newValue: {
       singleSelectOptionId: item.newStatusId
-    }
+    },
+    url: item.content.url
   }))
 
-  console.log(`Updating ${itemsToUpdate.length} items...`);
-  // await githubAPI.updateProjectItemsFields(itemsPayload);
+  await githubAPI.updateProjectItemsFields(itemsPayload);
+  console.log(`${itemsToUpdate.length} items updated: `, itemsPayload.map(item => item.url));
 }
 
 module.exports = {

@@ -96,11 +96,13 @@ module.exports = class GithubAPI {
                   ... on Issue {
                     id
                     title
+                    url
                     ${ projectItemsSubquery }
                   }
                   ... on PullRequest {
                     id
                     title
+                    url
                     ${ projectItemsSubquery }
                   }
                 }
