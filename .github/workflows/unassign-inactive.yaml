@@ -3,7 +3,7 @@ run-name: Unassign Inactive Contributors
 
 on:
   schedule:
-    - cron: "*/20 * * * *" # Every 8 minute
+    - cron: "*/2 * * * *" # Every 2 minutes - for testing
   workflow_dispatch:
 
 jobs:
