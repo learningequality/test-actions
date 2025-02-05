@@ -8,4 +8,5 @@ jobs:
   call-label-action:
     uses: learningequality/.github/.github/workflows/community-contribution-label.yml@main
     secrets:
-        token: ${{ secrets.WORKFLOW_PAT }}
+        LE_BOT_APP_ID: ${{ secrets.LE_BOT_APP_ID }}
+        LE_BOT_PRIVATE_KEY: ${{ secrets.LE_BOT_PRIVATE_KEY }}
