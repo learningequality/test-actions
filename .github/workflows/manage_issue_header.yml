@@ -1,0 +1,9 @@
+name: Manage issue header
+
+on:
+  issues:
+    types: [labeled, unlabeled]
+
+jobs:
+  handle-help-wanted:
+    uses: MisRob/shared-workflows/.github/workflows/manage-issue.yml@manage-issue-header
