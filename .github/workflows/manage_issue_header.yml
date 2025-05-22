@@ -6,4 +6,4 @@ on:
 
 jobs:
   handle-help-wanted:
-    uses: MisRob/.github/.github/workflows/manage-issue-header.yml@manage-issue-header
+    uses: learningequality/.github/.github/workflows/manage-issue-header.yml@main
