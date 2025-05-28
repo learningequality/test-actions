@@ -1,6 +1,6 @@
 ---
-name: Blank
-about: Report a bug to help us improve
+name: Blank issue
+about: For issues that don't fit any other category
 ---
 
 <!---HEADER START-->
