@@ -1,5 +1,5 @@
 ---
-name: Blank issue
+name: Blank
 ---
 
 <!---HEADER START-->
