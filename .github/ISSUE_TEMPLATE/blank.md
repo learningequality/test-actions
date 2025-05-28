@@ -1,5 +1,6 @@
 ---
 name: Blank
+about: Report a bug to help us improve
 ---
 
 <!---HEADER START-->
