@@ -6,6 +6,9 @@ on:
 
 jobs:
   contributor_issue_comment:
-    uses: learningequality/.github/.github/workflows/notify_team_new_comment.yml@main
+    uses: testiamshobh/.github/.github/workflows/notify_team_new_comment.yml@main
     secrets:
+      LE_BOT_APP_ID: ${{ secrets.LE_BOT_APP_ID }}
+      LE_BOT_PRIVATE_KEY: ${{ secrets.LE_BOT_PRIVATE_KEY }}
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      SLACK_COMMUNITY_NOTIFICATIONS_WEBHOOK_URL: ${{ secrets.SLACK_COMMUNITY_NOTIFICATIONS_WEBHOOK_URL }}
