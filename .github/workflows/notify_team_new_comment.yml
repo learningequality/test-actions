@@ -6,7 +6,7 @@ on:
 
 jobs:
   contributor_issue_comment:
-    uses: testiamshobh/.github/.github/workflows/notify_team_new_comment.yml@main
+    uses: learningequality/.github/.github/workflows/notify_team_new_comment.yml@main
     secrets:
       LE_BOT_APP_ID: ${{ secrets.LE_BOT_APP_ID }}
       LE_BOT_PRIVATE_KEY: ${{ secrets.LE_BOT_PRIVATE_KEY }}
