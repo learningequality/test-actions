@@ -6,7 +6,7 @@ on:
 
 jobs:
   call-label-action:
-    uses: learningequality/.github/.github/workflows/community-contribution-label.yml@main
+    uses: MisRob/.github/.github/workflows/community-contribution-label.yml@community-automations-updates
     secrets:
         LE_BOT_APP_ID: ${{ secrets.LE_BOT_APP_ID }}
         LE_BOT_PRIVATE_KEY: ${{ secrets.LE_BOT_PRIVATE_KEY }}

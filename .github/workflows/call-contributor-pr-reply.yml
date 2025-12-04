@@ -5,7 +5,7 @@ on:
 jobs:
   call-workflow:
     name: Call shared workflow
-    uses: learningequality/.github/.github/workflows/contributor-pr-reply.yml@main
+    uses: MisRob/.github/.github/workflows/contributor-pr-reply.yml@community-automations-updates
     secrets:
       LE_BOT_APP_ID: ${{ secrets.LE_BOT_APP_ID }}
       LE_BOT_PRIVATE_KEY: ${{ secrets.LE_BOT_PRIVATE_KEY }}
