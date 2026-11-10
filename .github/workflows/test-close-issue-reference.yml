@@ -1,0 +1,50 @@
+name: Test addCloseIssueReferences with the app token
+on:
+  pull_request:
+    types: [opened, synchronize]
+permissions:
+  contents: read
+jobs:
+  link:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate App Token
+        id: generate-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.LE_BOT_APP_ID }}
+          private-key: ${{ secrets.LE_BOT_PRIVATE_KEY }}
+          permission-issues: write
+          permission-pull-requests: write
+      - name: Checkout .github repository
+        uses: actions/checkout@v7
+        with:
+          repository: learningequality/.github
+          ref: pr-link-reference
+      - name: Link and confirm
+        uses: actions/github-script@v9
+        env:
+          ISSUE_NUMBER: '103'
+        with:
+          github-token: ${{ steps.generate-token.outputs.token }}
+          script: |
+            const { addClosingIssueReference } = require('./scripts/utils.js');
+            const { owner, repo } = context.repo;
+            const issueNumber = Number(process.env.ISSUE_NUMBER);
+            const { data: issue } = await github.rest.issues.get({ owner, repo, issue_number: issueNumber });
+            await addClosingIssueReference(issue.node_id, context.payload.pull_request.node_id, github);
+            const { repository } = await github.graphql(
+              `query ($owner: String!, $repo: String!, $number: Int!) {
+                repository(owner: $owner, name: $repo) {
+                  pullRequest(number: $number) {
+                    closingIssuesReferences(first: 10) { nodes { number } }
+                  }
+                }
+              }`,
+              { owner, repo, number: context.payload.pull_request.number },
+            );
+            const linked = repository.pullRequest.closingIssuesReferences.nodes.map(node => node.number);
+            core.info(`Closing references: ${JSON.stringify(linked)}`);
+            if (!linked.includes(issueNumber)) {
+              core.setFailed(`#${issueNumber} is not linked`);
+            }
