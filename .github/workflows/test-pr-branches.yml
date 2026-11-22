@@ -1,0 +1,28 @@
+name: Test .github PR branches
+on: # zizmor: ignore[dangerous-triggers]
+  pull_request_target:
+    types: [opened, edited]
+  issues:
+    types: [opened, reopened, edited, assigned, unassigned]
+permissions:
+  contents: read
+jobs:
+  contributor-pr-reply:
+    if: github.event_name == 'pull_request_target' && (github.event.action == 'opened' || (github.event.action == 'edited' && github.event.changes.body))
+    uses: learningequality/.github/.github/workflows/contributor-pr-reply.yml@test/link-issues-for-maintainers
+    secrets:
+      LE_BOT_APP_ID: ${{ secrets.LE_BOT_APP_ID }}
+      LE_BOT_PRIVATE_KEY: ${{ secrets.LE_BOT_PRIVATE_KEY }}
+      SLACK_COMMUNITY_NOTIFICATIONS_WEBHOOK_URL: ${{ secrets.SLACK_COMMUNITY_NOTIFICATIONS_WEBHOOK_URL }}
+  community-contribution-label:
+    if: github.event_name == 'issues' && contains(fromJSON('["assigned","unassigned"]'), github.event.action)
+    uses: learningequality/.github/.github/workflows/community-contribution-label.yml@test/exclude-bots-from-community-label
+    secrets:
+      LE_BOT_APP_ID: ${{ secrets.LE_BOT_APP_ID }}
+      LE_BOT_PRIVATE_KEY: ${{ secrets.LE_BOT_PRIVATE_KEY }}
+  issue-header:
+    if: github.event_name == 'issues' && (contains(fromJSON('["opened","reopened"]'), github.event.action) || (github.event.action == 'edited' && github.event.changes.body))
+    uses: learningequality/.github/.github/workflows/manage-issue-header.yml@test/issue-header-on-edit
+    secrets:
+      LE_BOT_APP_ID: ${{ secrets.LE_BOT_APP_ID }}
+      LE_BOT_PRIVATE_KEY: ${{ secrets.LE_BOT_PRIVATE_KEY }}
